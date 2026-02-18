@@ -34,3 +34,15 @@ Jeder Schritt wird nach Abschluss hier eingetragen.
 **Warum:** Custom Hooks kapseln die Datenbanklogik sauber und machen sie in allen Komponenten wiederverwendbar. Realtime-Subscriptions ersetzen das manuelle Polling und sorgen fuer sofortige Aktualisierung bei allen eingeloggten Nutzern.
 **Dateien:** `src/hooks/useProjekte.js`, `src/hooks/useAuditLog.js`
 **Status:** Abgeschlossen
+
+---
+
+## Schritt 5 – Auth-System mit Supabase Auth
+**Was:** `useAuth` Hook mit Supabase Auth implementiert. Ersetzt die hardcodierten Username/Password-Paare aus der HTML durch echte Email/Passwort-Authentifizierung. Rollen (admin/editor/viewer) werden ueber Supabase User Metadata gesteuert. Hook liefert `user`, `role`, `displayName`, `canEdit` und `signIn`/`signOut` Funktionen.
+**Warum:** Echte Authentifizierung statt Client-seitiger Passwort-Pruefung. Supabase Auth bietet sichere Session-Verwaltung, JWTs und nahtlose Integration mit Row Level Security. Rollen in User Metadata sind flexibel und ohne eigene Rollen-Tabelle nutzbar.
+**Dateien:** `src/hooks/useAuth.js`
+**Anleitung Benutzer anlegen:**
+1. Supabase Dashboard → Authentication → Users → Add User
+2. Email + Passwort setzen
+3. User anklicken → Edit → Raw User Meta Data: `{ "role": "admin", "display_name": "Admin" }`
+**Status:** Abgeschlossen
