@@ -70,3 +70,17 @@ Jeder Schritt wird nach Abschluss hier eingetragen.
 **Warum:** `next/font/google` laedt Fonts zur Build-Zeit herunter und liefert sie lokal aus — kein Google-Request im Browser. Die page.jsx verbindet alle Hooks und Komponenten zur vollstaendigen App. Lazy-Init des Supabase-Clients verhindert Build-Fehler bei fehlenden Env-Vars.
 **Dateien:** `src/app/layout.jsx`, `src/app/page.jsx`, `src/lib/supabase.js` (angepasst), `src/app/globals.css` (minimiert)
 **Status:** Abgeschlossen
+
+---
+
+## Schritt 9 – Vercel Deployment konfiguriert
+**Was:** Projektname in package.json korrigiert. Keine `vercel.json` noetig — Next.js wird von Vercel nativ erkannt. Deployment-Schritte dokumentiert.
+**Warum:** Vercel erkennt Next.js automatisch, konfiguriert Build-Command (`next build`) und Output-Verzeichnis (`.next`). Keinerlei manuelle Konfiguration erforderlich — Zero-Config Deployment.
+**Deployment-Anleitung:**
+1. GitHub-Repo erstellen: `gh repo create seitz-it-dashboard --private --source=.`
+2. Code pushen: `git push -u origin master`
+3. Vercel Dashboard → "Add New Project" → GitHub-Repo auswaehlen
+4. Environment Variables setzen: `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+5. Deploy klicken — fertig!
+**Dateien:** `package.json` (Name korrigiert)
+**Status:** Abgeschlossen
