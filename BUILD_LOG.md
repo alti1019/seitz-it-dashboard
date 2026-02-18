@@ -62,3 +62,11 @@ Jeder Schritt wird nach Abschluss hier eingetragen.
 **Warum:** Die Original-HTML hatte nur ein Dropdown-Menue fuer Sortierung. Klickbare Spaltenkoepfe sind intuitiver und entsprechen dem Standard fuer Tabellen-UIs. Die Sortierlogik ist im useMemo gekapselt fuer Performance.
 **Dateien:** `src/components/ProjectTable.jsx` (erweitert)
 **Status:** Abgeschlossen
+
+---
+
+## Schritt 8 – Next.js App Router Seiten integriert
+**Was:** Hauptseite (`page.jsx`) mit allen Ansichten (Liste/Cluster/Logs), Filterleiste und Auth-Gate erstellt. Layout (`layout.jsx`) mit IBM Plex Sans + Mono Fonts via `next/font/google` (DSGVO-konform lokal gehostet). Alle CSS-Animationen und Hover-Effekte aus dem Original uebernommen. Supabase-Client auf Lazy-Initialisierung umgestellt (Proxy-Pattern), damit der Build ohne gesetzte Env-Vars durchlaeuft.
+**Warum:** `next/font/google` laedt Fonts zur Build-Zeit herunter und liefert sie lokal aus — kein Google-Request im Browser. Die page.jsx verbindet alle Hooks und Komponenten zur vollstaendigen App. Lazy-Init des Supabase-Clients verhindert Build-Fehler bei fehlenden Env-Vars.
+**Dateien:** `src/app/layout.jsx`, `src/app/page.jsx`, `src/lib/supabase.js` (angepasst), `src/app/globals.css` (minimiert)
+**Status:** Abgeschlossen
