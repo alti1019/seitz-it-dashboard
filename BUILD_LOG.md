@@ -26,3 +26,11 @@ Jeder Schritt wird nach Abschluss hier eingetragen.
 **Warum:** `@supabase/ssr` ist die offizielle Loesung fuer Supabase in Next.js App Router. Der Singleton verhindert mehrfache Client-Instanzen. Umgebungsvariablen trennen Konfiguration vom Code.
 **Dateien:** `src/lib/supabase.js`, `.env.example`, `.env.local`
 **Status:** Abgeschlossen
+
+---
+
+## Schritt 4 – CRUD-Hooks mit Realtime
+**Was:** Zwei Custom Hooks erstellt: `useProjekte` (Laden, Hinzufuegen, Bearbeiten, Loeschen von Projekten mit Realtime-Subscription) und `useAuditLog` (Aenderungsprotokoll lesen und schreiben). Beide Hooks nutzen Supabase Realtime — Aenderungen anderer User sind sofort sichtbar.
+**Warum:** Custom Hooks kapseln die Datenbanklogik sauber und machen sie in allen Komponenten wiederverwendbar. Realtime-Subscriptions ersetzen das manuelle Polling und sorgen fuer sofortige Aktualisierung bei allen eingeloggten Nutzern.
+**Dateien:** `src/hooks/useProjekte.js`, `src/hooks/useAuditLog.js`
+**Status:** Abgeschlossen
