@@ -54,3 +54,11 @@ Jeder Schritt wird nach Abschluss hier eingetragen.
 **Warum:** Modulare Komponentenstruktur ermoeglicht bessere Wartbarkeit, Testbarkeit und Wiederverwendung. Jede Datei hat eine klare Verantwortung. Die Styles wurden 1:1 aus dem Original uebernommen fuer visuell identisches Ergebnis.
 **Dateien:** `src/components/Login.jsx`, `src/components/ProjectRow.jsx`, `src/components/ProjectTable.jsx`, `src/components/ClusterView.jsx`, `src/components/AddProjectModal.jsx`, `src/components/AuditLogPanel.jsx`, `src/components/StatsBar.jsx`, `src/components/ProgressBar.jsx`, `src/lib/constants.js`
 **Status:** Abgeschlossen
+
+---
+
+## Schritt 7 – Spalten-Sortierung implementiert
+**Was:** ProjectTable um interaktive Spalten-Sortierung erweitert. SortableHeader-Komponente mit visuellen Indikatoren (↑ ↓ ↕). Sortierbar sind: Prioritaet (nach PRIO_ORDER), Titel (alphabetisch deutsch), Cluster (alphabetisch) und Fortschritt (numerisch). Klick auf Spalte wechselt Richtung, Klick auf andere Spalte setzt neue Sortierung.
+**Warum:** Die Original-HTML hatte nur ein Dropdown-Menue fuer Sortierung. Klickbare Spaltenkoepfe sind intuitiver und entsprechen dem Standard fuer Tabellen-UIs. Die Sortierlogik ist im useMemo gekapselt fuer Performance.
+**Dateien:** `src/components/ProjectTable.jsx` (erweitert)
+**Status:** Abgeschlossen
