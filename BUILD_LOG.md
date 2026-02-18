@@ -46,3 +46,11 @@ Jeder Schritt wird nach Abschluss hier eingetragen.
 2. Email + Passwort setzen
 3. User anklicken → Edit → Raw User Meta Data: `{ "role": "admin", "display_name": "Admin" }`
 **Status:** Abgeschlossen
+
+---
+
+## Schritt 6 – React Komponenten aus HTML extrahiert
+**Was:** Alle UI-Komponenten aus der monolithischen HTML-Datei in separate React-Dateien extrahiert: Login (Email statt Username), ProjectRow (Inline-Edit), ProjectTable, ClusterView (Karten-Ansicht), AddProjectModal, AuditLogPanel, StatsBar, ProgressBar. Zusaetzlich constants.js mit PRIO_ORDER, PRIO_COLORS, getProgressColor und inputStyle.
+**Warum:** Modulare Komponentenstruktur ermoeglicht bessere Wartbarkeit, Testbarkeit und Wiederverwendung. Jede Datei hat eine klare Verantwortung. Die Styles wurden 1:1 aus dem Original uebernommen fuer visuell identisches Ergebnis.
+**Dateien:** `src/components/Login.jsx`, `src/components/ProjectRow.jsx`, `src/components/ProjectTable.jsx`, `src/components/ClusterView.jsx`, `src/components/AddProjectModal.jsx`, `src/components/AuditLogPanel.jsx`, `src/components/StatsBar.jsx`, `src/components/ProgressBar.jsx`, `src/lib/constants.js`
+**Status:** Abgeschlossen
