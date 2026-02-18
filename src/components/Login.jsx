@@ -8,7 +8,7 @@ import { inputStyle } from '@/lib/constants'
  * @param {Function} props.onLogin - Callback with (email, password)
  */
 export default function Login({ onLogin }) {
-  const [email, setEmail] = useState('')
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -17,6 +17,8 @@ export default function Login({ onLogin }) {
     e.preventDefault()
     setLoading(true)
     setError('')
+    // Append @seitz.de if user enters just a name (like the original HTML)
+    const email = username.includes('@') ? username : `${username}@seitz.de`
     try {
       await onLogin(email, password)
     } catch (err) {
@@ -36,14 +38,13 @@ export default function Login({ onLogin }) {
         </div>
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: 14 }}>
-            <div style={{ fontSize: 10, color: '#64748b', letterSpacing: 2, marginBottom: 5 }}>EMAIL</div>
+            <div style={{ fontSize: 10, color: '#64748b', letterSpacing: 2, marginBottom: 5 }}>BENUTZERNAME</div>
             <input
               autoFocus
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
+              value={username}
+              onChange={e => setUsername(e.target.value)}
               style={inputStyle}
-              placeholder="z.B. admin@seitz.de"
+              placeholder="z.B. admin"
             />
           </div>
           <div style={{ marginBottom: 14 }}>
@@ -75,9 +76,9 @@ export default function Login({ onLogin }) {
         </form>
         <div style={{ marginTop: 28, padding: 16, background: '#0f172a', borderRadius: 3, fontSize: 11, color: '#475569', lineHeight: 2 }}>
           <strong style={{ color: '#64748b' }}>Demo-Zugänge</strong><br />
-          admin@seitz.de / seitz2024 → Admin (Vollzugriff)<br />
-          it-leitung@seitz.de / seitz2024 → Editor<br />
-          gast@seitz.de / gast123 → Nur lesen
+          admin / seitz2024 → Admin (Vollzugriff)<br />
+          it-leitung / seitz2024 → Editor<br />
+          gast / gast123 → Nur lesen
         </div>
       </div>
     </div>
