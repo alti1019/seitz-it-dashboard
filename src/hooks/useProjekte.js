@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
+import { getSupabase } from '@/lib/supabase'
 
 /**
  * Hook for CRUD operations on the projekte table.
@@ -12,6 +12,7 @@ export function useProjekte() {
   const [error, setError] = useState(null)
 
   useEffect(() => {
+    const supabase = getSupabase()
     fetchProjekte()
 
     // Realtime Subscription – changes from other users are visible immediately
@@ -26,7 +27,7 @@ export function useProjekte() {
   }, [])
 
   async function fetchProjekte() {
-    const { data, error } = await supabase
+    const { data, error } = await getSupabase()
       .from('projekte')
       .select('*')
       .order('created_at', { ascending: true })
@@ -41,7 +42,7 @@ export function useProjekte() {
    * @returns {Object} The inserted project
    */
   async function addProjekt(projekt) {
-    const { data, error } = await supabase
+    const { data, error } = await getSupabase()
       .from('projekte')
       .insert([projekt])
       .select()
@@ -56,7 +57,7 @@ export function useProjekte() {
    * @param {Object} updates - Fields to update
    */
   async function updateProjekt(id, updates) {
-    const { error } = await supabase
+    const { error } = await getSupabase()
       .from('projekte')
       .update(updates)
       .eq('id', id)
@@ -68,7 +69,7 @@ export function useProjekte() {
    * @param {string} id - UUID of the project
    */
   async function deleteProjekt(id) {
-    const { error } = await supabase
+    const { error } = await getSupabase()
       .from('projekte')
       .delete()
       .eq('id', id)

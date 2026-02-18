@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
+import { getSupabase } from '@/lib/supabase'
 
 /**
  * Hook for Supabase Auth with role-based access control.
@@ -22,6 +22,7 @@ export function useAuth() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    const supabase = getSupabase()
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null)
       setLoading(false)
@@ -40,13 +41,13 @@ export function useAuth() {
    * @param {string} password
    */
   async function signIn(email, password) {
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { error } = await getSupabase().auth.signInWithPassword({ email, password })
     if (error) throw error
   }
 
   /** Sign out the current user. */
   async function signOut() {
-    await supabase.auth.signOut()
+    await getSupabase().auth.signOut()
   }
 
   const role = user?.user_metadata?.role ?? 'viewer'

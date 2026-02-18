@@ -14,14 +14,13 @@ export function createClient() {
 }
 
 /**
- * Lazy-initialized singleton for Client Components.
- * Avoids errors during Next.js build/prerender when env vars are not set.
+ * Returns the lazy-initialized Supabase singleton.
+ * Call this inside hooks/components, not at module level,
+ * to avoid build errors when env vars are not yet set.
  */
-export const supabase = new Proxy({}, {
-  get(_, prop) {
-    if (!_supabase) {
-      _supabase = createClient()
-    }
-    return _supabase[prop]
+export function getSupabase() {
+  if (!_supabase) {
+    _supabase = createClient()
   }
-})
+  return _supabase
+}

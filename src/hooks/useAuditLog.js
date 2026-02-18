@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
+import { getSupabase } from '@/lib/supabase'
 
 /**
  * Hook for reading and writing audit log entries.
@@ -11,6 +11,7 @@ export function useAuditLog() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    const supabase = getSupabase()
     fetchLogs()
 
     // Realtime for audit log updates
@@ -25,7 +26,7 @@ export function useAuditLog() {
   }, [])
 
   async function fetchLogs() {
-    const { data, error } = await supabase
+    const { data, error } = await getSupabase()
       .from('audit_log')
       .select('*')
       .order('ts', { ascending: false })
@@ -46,7 +47,7 @@ export function useAuditLog() {
    * @param {string} details - Description of what changed
    */
   async function addLog(username, action, projektTitel, details) {
-    const { error } = await supabase
+    const { error } = await getSupabase()
       .from('audit_log')
       .insert([{
         username,
