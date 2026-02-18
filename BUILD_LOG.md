@@ -18,3 +18,11 @@ Jeder Schritt wird nach Abschluss hier eingetragen.
 **Warum:** Supabase PostgreSQL bietet Echtzeit-Updates, Row Level Security und eine REST-API out-of-the-box. Die Seed-Daten stellen sicher, dass die App sofort mit den echten Projektdaten lauffaehig ist.
 **Dateien:** `supabase/schema.sql`, `supabase/seed.sql`
 **Status:** Abgeschlossen
+
+---
+
+## Schritt 3 – Supabase Client und Umgebungsvariablen
+**Was:** Supabase Browser-Client mit `@supabase/ssr` konfiguriert. Singleton-Pattern fuer Client Components. `.env.example` als Vorlage und `.env.local` fuer lokale Entwicklung angelegt.
+**Warum:** `@supabase/ssr` ist die offizielle Loesung fuer Supabase in Next.js App Router. Der Singleton verhindert mehrfache Client-Instanzen. Umgebungsvariablen trennen Konfiguration vom Code.
+**Dateien:** `src/lib/supabase.js`, `.env.example`, `.env.local`
+**Status:** Abgeschlossen
