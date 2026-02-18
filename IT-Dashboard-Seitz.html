@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>IT-Projektplanung – Autohaus Seitz Gruppe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0f172a; font-family: 'IBM Plex Sans', sans-serif; color: #e2e8f0; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #1e293b; }
+  ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+  input, select, textarea, button { font-family: inherit; }
+  .row-hover:hover { background: #1e293b !important; }
+  .btn:hover { opacity: 0.82; transform: translateY(-1px); }
+  .btn { transition: opacity 0.15s, transform 0.15s; }
+  .cluster-card:hover { border-color: #3b82f6 !important; }
+  .cluster-card { transition: border-color 0.2s; }
+  .fade-in { animation: fadeIn 0.2s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; z-index: 200; backdrop-filter: blur(2px); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useMemo, useRef } = React;
+
+const RAW_DATA = [{"id":0,"prio":"A++","titel":"Bau-Projekt: Seat Weingarten mit Schlüsseltresor","projektnr":null,"fertig":100,"cluster":"Bauprojekte / Standortausbau"},{"id":1,"prio":"B","titel":"CrossCam für PZ Augsburg","projektnr":null,"fertig":100,"cluster":"Bauprojekte / Standortausbau, Cross / Werkstatt / Video"},{"id":2,"prio":"A++","titel":"Bau-Projekt: Verwaltung/DLZ/Parkhaus mit Schlüsseltresor, mit Secontec Alarmanlage","projektnr":null,"fertig":100,"cluster":"Bauprojekte / Standortausbau, Physical Security / Schließanlagen"},{"id":3,"prio":"A++","titel":"Bau-Projekt: PZ Augsburg mit Schlüsseltresor, mit Secontec Alarmanlage","projektnr":null,"fertig":100,"cluster":"Bauprojekte / Standortausbau, Physical Security / Schließanlagen"},{"id":4,"prio":"A","titel":"Neues ControllingTool evaluieren: ITPM / MARC / Numbero Cockpit (Cloud !)","projektnr":"#400#","fertig":100,"cluster":"Controlling / Data & Analytics"},{"id":5,"prio":"?","titel":"Cross MSA SM 1x, LK 1x ff. (Anforderung Niebauer+Vogler) nur PO!","projektnr":null,"fertig":100,"cluster":"Cross / Werkstatt / Video"},{"id":6,"prio":"A++","titel":"CrossCam für alle Seat Betriebe (ISO-Relevant)","projektnr":null,"fertig":100,"cluster":"Cross / Werkstatt / Video"},{"id":7,"prio":"B","titel":"CrossCam / MSA --> MSR Erweiterungen auf zus. Betriebe","projektnr":"#540#","fertig":100,"cluster":"Cross / Werkstatt / Video"},{"id":8,"prio":"?","titel":"D3 Eingangsrechnung: Ausrüstung mit 2 Mon.","projektnr":null,"fertig":100,"cluster":"Dokumentenmanagement / D3 / E-Rechnung"},{"id":9,"prio":"A++","titel":"Smartserver --> d3 EdgeBox ersetzen wg. Q6 (Step1: Audi Standorte)","projektnr":null,"fertig":100,"cluster":"Dokumentenmanagement / D3 / E-Rechnung"},{"id":10,"prio":"A++","titel":"D3 Eingangsrechnung aktivieren","projektnr":null,"fertig":100,"cluster":"Dokumentenmanagement / D3 / E-Rechnung"},{"id":11,"prio":"A","titel":"ELO-Ablöse durch d3 Archiv (Migration) + Prüfung/Freigabe interne Belastungen","projektnr":null,"fertig":100,"cluster":"Dokumentenmanagement / D3 / E-Rechnung"},{"id":12,"prio":"A","titel":"Konsolidierung Mobile Device Management (MS intune)","projektnr":null,"fertig":100,"cluster":"Endpoint & MDM / Intune / Mobile"},{"id":13,"prio":"A++","titel":"IT-Sicherheit: VPN-Zugriff via Notebook (~150x)","projektnr":null,"fertig":100,"cluster":"IT-Security / Endpoint / Hardening"},{"id":14,"prio":"A++","titel":"IT-Sicherheit: Pentest (Handys für Werkstatt + USB-Anschluß sperren)","projektnr":null,"fertig":100,"cluster":"IT-Security / Endpoint / Hardening"},{"id":15,"prio":"A++++","titel":"IT-Sicherheit: Antivirus FireEye Endpoint Detection and Response/Monitoring","projektnr":"#120#","fertig":100,"cluster":"IT-Security / Endpoint / Hardening"},{"id":16,"prio":"A+","titel":"IT-Sicherheit: K-Business: Notfallplan erstellen","projektnr":"#110#","fertig":100,"cluster":"IT-Security / Endpoint / Hardening"},{"id":17,"prio":"A+","titel":"Umbrella","projektnr":null,"fertig":100,"cluster":"IT-Security / Endpoint / Hardening"},{"id":18,"prio":"A++","titel":"Matrix Endpoint Management System Upgrade","projektnr":null,"fertig":100,"cluster":"IT-Security / Endpoint / Hardening"},{"id":19,"prio":"A++++","titel":"IT-Sicherheit präventiv: Cisco Umbrella","projektnr":"#140#","fertig":100,"cluster":"IT-Security / Endpoint / Hardening, Telefonie / Teams Migration"},{"id":20,"prio":"A++","titel":"Office2013 --> Office2021 (Deadline April 2023)","projektnr":"#300#","fertig":100,"cluster":"Microsoft 365 / Office / SharePoint"},{"id":21,"prio":"A++","titel":"Viadesk durch Sharepoint ersetzen","projektnr":"#320#","fertig":100,"cluster":"Microsoft 365 / Office / SharePoint"},{"id":22,"prio":"A++","titel":"Telekom MPLS-Datennetz Redesign (LWL VZ,AZ,MM)","projektnr":null,"fertig":100,"cluster":"Netzwerk / Switches / SD-WAN"},{"id":23,"prio":"A++","titel":"Server-Upgrade (Win Server 2012R2 zu Win Server 2019)","projektnr":"#330#","fertig":100,"cluster":"Netzwerk / Switches / SD-WAN, Server / Virtualisierung / Backup"},{"id":24,"prio":"A","titel":"K-Business: Netzwerküberwachung (Switch/WLAN) mit Servicevertrag","projektnr":"#160#","fertig":100,"cluster":"Netzwerk / Switches / SD-WAN, WLAN / Access Points"},{"id":25,"prio":"A++","titel":"NORA: Umzug von MM --> LK (gemeinsamer Bestellmandant)","projektnr":null,"fertig":100,"cluster":"NORA / Standortwechsel"},{"id":26,"prio":"A","titel":"NORA: Umzug an neuen Standort zum 7.5.24","projektnr":null,"fertig":100,"cluster":"NORA / Standortwechsel"},{"id":27,"prio":"A","titel":"Schließanlage VG+PA","projektnr":null,"fertig":100,"cluster":"Physical Security / Schließanlagen"},{"id":28,"prio":"A++","titel":"DOM Schließanlage NO","projektnr":null,"fertig":100,"cluster":"Physical Security / Schließanlagen"},{"id":29,"prio":"A++","titel":"Telekom vCloud ablösen (abgekündigt für 12/23)","projektnr":"#310#","fertig":100,"cluster":"Provider / Partnerwechsel"},{"id":30,"prio":"A","titel":"Seitz Akademie","projektnr":null,"fertig":100,"cluster":"Schulungen / LMS"},{"id":31,"prio":"A+","titel":"Datensicherung Support Ende","projektnr":null,"fertig":100,"cluster":"Server / Virtualisierung / Backup"},{"id":32,"prio":"A+","titel":"Zentrale USV ersetzen","projektnr":null,"fertig":100,"cluster":"Server / Virtualisierung / Backup"},{"id":33,"prio":"A","titel":"VCenter 2026 end of support","projektnr":null,"fertig":100,"cluster":"Server / Virtualisierung / Backup"},{"id":34,"prio":"A","titel":"SG: Standort um Marke Seat/Cupra erweitern zum 1.1.24","projektnr":null,"fertig":100,"cluster":"Sonstiges"},{"id":35,"prio":"A","titel":"CROSS PartsMobile (Ablöse Partscan) AZ/SZ/IS/LI/WA/LK + 3 neue LK/SG/KE","projektnr":"#500#","fertig":100,"cluster":"Sonstiges"},{"id":36,"prio":"A","titel":"Skoda-Betriebe mit ServiceKey ausrüsten (ISO relevant)","projektnr":"#510#","fertig":100,"cluster":"Sonstiges"},{"id":37,"prio":"A","titel":"DLZ: HomeBase","projektnr":"#420#","fertig":100,"cluster":"Sonstiges"},{"id":38,"prio":"A","titel":"Thin-Clients in den Werkstätten gegen PCs ersetzen","projektnr":"#340#","fertig":100,"cluster":"Sonstiges"},{"id":39,"prio":"A","titel":"GW-Pricing (IT Krebs: eautoseller) DAT3 aktivieren","projektnr":null,"fertig":100,"cluster":"Sonstiges"},{"id":40,"prio":"A","titel":"Firmenkonsolidierung AZ","projektnr":null,"fertig":100,"cluster":"Sonstiges"},{"id":41,"prio":"A","titel":"Ausbau Zentrale Kundenbetreuung","projektnr":null,"fertig":100,"cluster":"Sonstiges"},{"id":42,"prio":"A++","titel":"ETMaster Hardware --> Software Umzug (Neue NL-Server nötig 14x á 4T€)","projektnr":"#370#","fertig":100,"cluster":"Sonstiges"},{"id":43,"prio":"A++","titel":"Odis 8","projektnr":null,"fertig":100,"cluster":"Sonstiges"},{"id":44,"prio":"A++","titel":"Windows 10 Major Update 21H2","projektnr":null,"fertig":100,"cluster":"Sonstiges"},{"id":45,"prio":"A++","titel":"KS: Erneuerung der MEKmedia Multimedia-Komponenten","projektnr":null,"fertig":100,"cluster":"Sonstiges"},{"id":46,"prio":"A++","titel":"Z-GWL + Buha: 26 Thinclients ersetzen gegen Notebooks","projektnr":null,"fertig":100,"cluster":"Sonstiges"},{"id":47,"prio":"A++","titel":"Audi Multimedia-Komponenten (DRM) AZ/MM/LD (ISO-relevant)","projektnr":null,"fertig":100,"cluster":"Sonstiges"},{"id":48,"prio":"A+++","titel":"Illertissen anbinden (IL) Betriebsnr. 69900","projektnr":null,"fertig":100,"cluster":"Sonstiges"},{"id":49,"prio":"A+++","titel":"Firewall activ active","projektnr":null,"fertig":100,"cluster":"Sonstiges"},{"id":50,"prio":"B","titel":"Lack-Standorte erhalten neue Hard- und Software VZ,MM,SF,WA","projektnr":"#520#","fertig":100,"cluster":"Sonstiges"},{"id":51,"prio":"B","titel":"Mobiler Verkäuferarbeitsplatz 90x","projektnr":null,"fertig":100,"cluster":"Sonstiges"},{"id":52,"prio":"B","titel":"automatisierte Google-Antworten","projektnr":null,"fertig":100,"cluster":"Sonstiges"},{"id":53,"prio":"C","titel":"1 Domain-Controller (Konzept)","projektnr":null,"fertig":100,"cluster":"Sonstiges"},{"id":54,"prio":"C","titel":"YOMA: Track & Trace","projektnr":null,"fertig":100,"cluster":"Sonstiges"},{"id":55,"prio":"A","titel":"DLZ: PoC Logistik-Software einführen (Kasasi)","projektnr":"#410#","fertig":100,"cluster":"Sonstiges"},{"id":56,"prio":"A","titel":"Erfassung aller Fahrzeugtransporte in der Gruppe","projektnr":null,"fertig":100,"cluster":"Sonstiges"},{"id":57,"prio":"A+","titel":"Einheitliche Mail-Domain","projektnr":null,"fertig":100,"cluster":"Sonstiges"},{"id":58,"prio":"A","titel":"Austausch alter PC-Hardware (mind. 150 PCs pro Jahr)","projektnr":"#350#","fertig":100,"cluster":"Sonstiges"},{"id":59,"prio":"A","titel":"Volkswagen/NFZ: Car-Configurator CI-Änderungen VZ/RV/MMVW+LD+SF+IS","projektnr":null,"fertig":100,"cluster":"Sonstiges"},{"id":60,"prio":"A++","titel":"zentrales Telefoncontrolling","projektnr":null,"fertig":100,"cluster":"Sonstiges"},{"id":61,"prio":"A++","titel":"Einbindung MM in Leasingrücknahme","projektnr":null,"fertig":100,"cluster":"Sonstiges"},{"id":62,"prio":"B","titel":"CI-Änderungen: VZ/RV/MMVW+LD+SF+IS+SM","projektnr":"#530#","fertig":100,"cluster":"Sonstiges"},{"id":63,"prio":"B","titel":"Testphase Fahrzeugverortung mit Kundenansicht (Track&Trace)","projektnr":null,"fertig":100,"cluster":"Sonstiges"},{"id":64,"prio":"A+++","titel":"Telefonie: Teams-Migration der Cisco-Standorte (Deadline 31.12.23)","projektnr":"#200#","fertig":100,"cluster":"Telefonie / Teams Migration"},{"id":65,"prio":"C","titel":"Einheitliche Ausrüstung von Besprechungsräumen (Cisco Roomkits/Poly)","projektnr":null,"fertig":100,"cluster":"Telefonie / Teams Migration"},{"id":66,"prio":"A","titel":"WLAN modernisieren. Cisco IOS XE Bengaluru 17.5.1 oder höher.","projektnr":null,"fertig":100,"cluster":"WLAN / Access Points"},{"id":67,"prio":"B","titel":"Konsolidierung WIFI-Infrastruktur (DNA)","projektnr":null,"fertig":100,"cluster":"WLAN / Access Points"},{"id":68,"prio":"A","titel":"Zeiterfassung (unprod. Mitarbeiter) per App – Step 1: Verwaltung","projektnr":"#450#","fertig":100,"cluster":"Zeiterfassung"},{"id":69,"prio":"A+","titel":"IT-Sicherheit: Härtung Active Directory","projektnr":"#160#","fertig":95,"cluster":"IT-Security / Endpoint / Hardening"},{"id":70,"prio":"A","titel":"Begleitung VWFS-Dealershop (Leasingstrecke)","projektnr":null,"fertig":90,"cluster":"Sonstiges"},{"id":71,"prio":"A","titel":"Austausch alter Netzwerk-Komponenten","projektnr":"#360#","fertig":80,"cluster":"Netzwerk / Switches / SD-WAN"},{"id":72,"prio":"A+","titel":"Umstellung der DOM-Softwareverwaltung","projektnr":null,"fertig":75,"cluster":"Physical Security / Schließanlagen"},{"id":73,"prio":"A","titel":"d3 Vertragsmanagement ggf. mit elektronischer Signatur (ELO --> d3)","projektnr":null,"fertig":70,"cluster":"Dokumentenmanagement / D3 / E-Rechnung"},{"id":74,"prio":"A+","titel":"IT-Sicherheit: Zugriff auf Firmengeräte einschränken mit Office365 EMS E3 2FA","projektnr":"#130#","fertig":70,"cluster":"IT-Security / Endpoint / Hardening"},{"id":75,"prio":"A+","titel":"Filesystem Groups -> Office365","projektnr":null,"fertig":70,"cluster":"Microsoft 365 / Office / SharePoint"},{"id":76,"prio":"A","titel":"IT-Sicherheit: Zutrittssicherung der EDV-Räume an Außen-Standorten (Kentix/DOM)","projektnr":"#150#","fertig":50,"cluster":"IT-Security / Endpoint / Hardening, Physical Security / Schließanlagen"},{"id":77,"prio":"A","titel":"Großabnehmer CRM (Kontakte, Ansprechpartner, Quartalsberichte)","projektnr":null,"fertig":45,"cluster":"Sonstiges"},{"id":78,"prio":"A+","titel":"Intune implementieren PCs","projektnr":null,"fertig":40,"cluster":"Endpoint & MDM / Intune / Mobile"},{"id":79,"prio":"B","titel":"SAP Lifecycle begleiten (2026 Migration S/4Hana)","projektnr":null,"fertig":40,"cluster":"SAP / S4HANA"},{"id":80,"prio":"A","titel":"MM - NW/GW-Handling analog DLZ","projektnr":null,"fertig":40,"cluster":"Sonstiges"},{"id":81,"prio":"A+","titel":"Mitarbeiter On-/Offboarding Workflow","projektnr":"#460#","fertig":35,"cluster":"HR / On- & Offboarding / Workflows"},{"id":82,"prio":"B","titel":"Einführung zentrales LMS (Arbeitsschutz, div. Schulungen)","projektnr":null,"fertig":30,"cluster":"Schulungen / LMS"},{"id":83,"prio":"B","titel":"d3 Serviceakte (für zentrale Fakturierung)","projektnr":null,"fertig":20,"cluster":"Dokumentenmanagement / D3 / E-Rechnung"},{"id":84,"prio":"A","titel":"O365 neuen Partner finden (Skysystems ablösen)","projektnr":null,"fertig":20,"cluster":"Microsoft 365 / Office / SharePoint, Provider / Partnerwechsel"},{"id":85,"prio":"A","titel":"Prozesse GW-Abteilung (Inzahlungnahme, Händlerkommunikation, Bilder)","projektnr":null,"fertig":20,"cluster":"Sonstiges"},{"id":86,"prio":"A+","titel":"Seitz-Datalake (Supabase ?)","projektnr":null,"fertig":15,"cluster":"Controlling / Data & Analytics"},{"id":87,"prio":"B","titel":"2026: SAP Migration S/4Hana","projektnr":null,"fertig":10,"cluster":"SAP / S4HANA"},{"id":88,"prio":"A","titel":"Robot Desktop Automation (Aubex Cross Auftragsvorbereitung)","projektnr":null,"fertig":10,"cluster":"Sonstiges"},{"id":89,"prio":"A","titel":"PO Umbau","projektnr":null,"fertig":10,"cluster":"Sonstiges"},{"id":90,"prio":null,"titel":"Seebacher to Seitz","projektnr":null,"fertig":10,"cluster":"Sonstiges"},{"id":91,"prio":"A+","titel":"MPLS durch SDWAN","projektnr":null,"fertig":5,"cluster":"Netzwerk / Switches / SD-WAN"},{"id":92,"prio":"A+","titel":"Neuwagen-Akt Workflow Ablöse CarI Digitalisierung Dispo","projektnr":null,"fertig":0,"cluster":"HR / On- & Offboarding / Workflows"},{"id":93,"prio":"A","titel":"IT-Sicherheit: Festplatten verschlüsseln (Bitlocker)","projektnr":null,"fertig":0,"cluster":"IT-Security / Endpoint / Hardening"},{"id":94,"prio":"A","titel":"Modernisierung Classifier","projektnr":null,"fertig":0,"cluster":"Sonstiges"},{"id":95,"prio":"A","titel":"Digitale Kundenbetreuung (KI telefoniert)","projektnr":null,"fertig":0,"cluster":"Sonstiges"},{"id":96,"prio":"A","titel":"Penetrationstest","projektnr":null,"fertig":0,"cluster":"Sonstiges"},{"id":97,"prio":"B","titel":"Passwortsafe für Mitarbeiterinnen","projektnr":null,"fertig":0,"cluster":"Sonstiges"},{"id":98,"prio":"B","titel":"Digitale Werkstatt: CROSS Werkstattplaner Pilot","projektnr":null,"fertig":0,"cluster":"Sonstiges"},{"id":99,"prio":"A+","titel":"Antivirus neu","projektnr":null,"fertig":0,"cluster":"IT-Security / Endpoint / Hardening"}];
+
+const PRIO_ORDER = {"A++++":0,"A+++":1,"A++":2,"A+":3,"A":4,"B":5,"C":6,"?":7};
+const PRIO_COLORS = {"A++++":"#ef4444","A+++":"#f97316","A++":"#f59e0b","A+":"#eab308","A":"#22c55e","B":"#3b82f6","C":"#8b5cf6","?":"#6b7280"};
+const USERS = [
+  {username:"admin",       password:"seitz2024", role:"admin"},
+  {username:"it-leitung",  password:"seitz2024", role:"editor"},
+  {username:"gast",        password:"gast123",   role:"viewer"},
+];
+const ALL_PRIOS = ["A++++","A+++","A++","A+","A","B","C","?"];
+const ALL_CLUSTERS = [...new Set(RAW_DATA.flatMap(r => r.cluster ? r.cluster.split(", ") : ["Sonstiges"]))].sort();
+
+let _nextId = RAW_DATA.length + 1;
+function nextId() { return _nextId++; }
+
+function getProgressColor(p) {
+  if (p === 100) return "#22c55e";
+  if (p >= 70)   return "#84cc16";
+  if (p >= 30)   return "#f59e0b";
+  if (p > 0)     return "#ef4444";
+  return "#475569";
+}
+
+const iStyle = {
+  width:"100%", background:"#0f172a", border:"1px solid #334155",
+  borderRadius:3, padding:"8px 11px", color:"#e2e8f0", fontSize:13, outline:"none"
+};
+
+function Label({label, children}) {
+  return (
+    <div style={{marginBottom:14}}>
+      <div style={{fontSize:10,color:"#64748b",letterSpacing:2,marginBottom:5}}>{label.toUpperCase()}</div>
+      {children}
+    </div>
+  );
+}
+
+function ProgressBar({value, height=4}) {
+  return (
+    <div style={{width:"100%",height,background:"#1e293b",borderRadius:99}}>
+      <div style={{width:`${value}%`,height,background:getProgressColor(value),borderRadius:99,transition:"width 0.3s"}}/>
+    </div>
+  );
+}
+
+// ─── PROJECT ROW ──────────────────────────────────────────────────────────────
+function ProjectRow({project, canEdit, onSave, onDelete}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState({...project});
+
+  function handleSave() {
+    onSave({...draft, fertig: Number(draft.fertig)});
+    setEditing(false);
+  }
+
+  if (editing) return (
+    <div style={{padding:"12px 16px", borderBottom:"1px solid #334155", background:"#0a1628"}} className="fade-in">
+      <div style={{display:"grid", gridTemplateColumns:"80px 1fr 1fr 100px", gap:8, marginBottom:10}}>
+        <select value={draft.prio||""} onChange={e=>setDraft(f=>({...f,prio:e.target.value}))} style={iStyle}>
+          {ALL_PRIOS.map(p=><option key={p}>{p}</option>)}
+        </select>
+        <input value={draft.titel||""} onChange={e=>setDraft(f=>({...f,titel:e.target.value}))} style={iStyle} placeholder="Projekttitel"/>
+        <input value={draft.cluster||""} onChange={e=>setDraft(f=>({...f,cluster:e.target.value}))} style={iStyle} placeholder="Cluster" list="cluster-dl"/>
+        <div style={{display:"flex",alignItems:"center",gap:6}}>
+          <input type="number" min="0" max="100" value={draft.fertig} onChange={e=>setDraft(f=>({...f,fertig:e.target.value}))} style={{...iStyle,textAlign:"center"}}/>
+          <span style={{color:"#64748b",fontSize:12}}>%</span>
+        </div>
+      </div>
+      <div style={{display:"flex",gap:8}}>
+        <button className="btn" onClick={handleSave} style={{padding:"6px 16px",background:"#22c55e",border:"none",borderRadius:3,color:"#fff",fontSize:12,cursor:"pointer",fontWeight:600}}>✓ Speichern</button>
+        <button className="btn" onClick={()=>{setEditing(false);setDraft({...project});}} style={{padding:"6px 14px",background:"transparent",border:"1px solid #334155",borderRadius:3,color:"#94a3b8",fontSize:12,cursor:"pointer"}}>Abbrechen</button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="row-hover" style={{display:"grid",gridTemplateColumns:"80px 1fr 180px 140px 80px",padding:"10px 16px",borderBottom:"1px solid #1e293b",alignItems:"center",transition:"background 0.15s"}}>
+      <div style={{fontSize:11,fontWeight:700,color:PRIO_COLORS[project.prio]||"#6b7280",fontFamily:"'IBM Plex Mono'"}}>
+        {project.prio||"—"}
+      </div>
+      <div>
+        <div style={{fontSize:13,color:"#e2e8f0",lineHeight:1.4}}>{project.titel}</div>
+        {project.projektnr && <div style={{fontSize:10,color:"#475569",fontFamily:"'IBM Plex Mono'",marginTop:2}}>{project.projektnr}</div>}
+      </div>
+      <div style={{paddingRight:8}}>
+        {(project.cluster||"Sonstiges").split(", ").map((c,i)=>(
+          <div key={i} style={{fontSize:10,color:"#64748b",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c}</div>
+        ))}
+      </div>
+      <div style={{paddingRight:8}}>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <div style={{flex:1}}><ProgressBar value={project.fertig}/></div>
+          <span style={{fontSize:11,color:getProgressColor(project.fertig),fontFamily:"'IBM Plex Mono'",minWidth:32,textAlign:"right"}}>{project.fertig}%</span>
+        </div>
+      </div>
+      <div style={{display:"flex",gap:6}}>
+        {canEdit && <>
+          <button className="btn" onClick={()=>setEditing(true)} style={{padding:"4px 10px",background:"#1e3a5f",border:"1px solid #1d4ed8",borderRadius:3,color:"#93c5fd",fontSize:11,cursor:"pointer"}}>Edit</button>
+          <button className="btn" onClick={onDelete} style={{padding:"4px 8px",background:"transparent",border:"1px solid #334155",borderRadius:3,color:"#64748b",fontSize:11,cursor:"pointer"}}>✕</button>
+        </>}
+      </div>
+    </div>
+  );
+}
+
+// ─── MAIN APP ─────────────────────────────────────────────────────────────────
+function App() {
+  const [user, setUser]             = useState(null);
+  const [loginErr, setLoginErr]     = useState("");
+  const [loginU, setLoginU]         = useState("");
+  const [loginP, setLoginP]         = useState("");
+  const [projects, setProjects]     = useState(()=>RAW_DATA.map(d=>({...d,_id:d.id})));
+  const [logs, setLogs]             = useState([]);
+  const [view, setView]             = useState("list");
+  const [search, setSearch]         = useState("");
+  const [filterPrio, setFilterPrio] = useState([]);
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [sortBy, setSortBy]         = useState("prio");
+  const [expandedCluster, setExpandedCluster] = useState(null);
+  const [showAdd, setShowAdd]       = useState(false);
+  const [newP, setNewP]             = useState({titel:"",prio:"A",fertig:0,cluster:"",projektnr:""});
+
+  const canEdit = user?.role === "admin" || user?.role === "editor";
+
+  function log(action, titel, details) {
+    setLogs(prev=>[{
+      id:Date.now(), ts:new Date().toLocaleString("de-DE"),
+      user:user?.username||"?", action, projekt:titel, details
+    },...prev]);
+  }
+
+  function handleLogin(e) {
+    e.preventDefault();
+    const found = USERS.find(u=>u.username===loginU && u.password===loginP);
+    if (found) { setUser(found); setLoginErr(""); }
+    else setLoginErr("Falscher Benutzername oder Passwort.");
+  }
+
+  function handleLogout() { log("Logout","–","Abgemeldet"); setUser(null); }
+
+  function handleSave(updated) {
+    setProjects(prev=>prev.map(p=>{
+      if(p._id!==updated._id) return p;
+      const changes=[];
+      if(p.fertig!==updated.fertig) changes.push(`Fortschritt: ${p.fertig}%→${updated.fertig}%`);
+      if(p.prio!==updated.prio) changes.push(`Prio: ${p.prio}→${updated.prio}`);
+      if(p.cluster!==updated.cluster) changes.push(`Cluster geändert`);
+      if(p.titel!==updated.titel) changes.push(`Titel geändert`);
+      if(changes.length) log("Bearbeitet",updated.titel,changes.join(", "));
+      return {...p,...updated};
+    }));
+  }
+
+  function handleDelete(id) {
+    const p=projects.find(x=>x._id===id);
+    if(window.confirm(`Projekt "${p.titel}" wirklich löschen?`)){
+      setProjects(prev=>prev.filter(x=>x._id!==id));
+      log("Gelöscht",p.titel,"Projekt gelöscht");
+    }
+  }
+
+  function handleAdd() {
+    const p={...newP,fertig:Number(newP.fertig),_id:nextId()};
+    setProjects(prev=>[...prev,p]);
+    log("Hinzugefügt",p.titel,`Prio:${p.prio}, Cluster:${p.cluster||"–"}`);
+    setShowAdd(false);
+    setNewP({titel:"",prio:"A",fertig:0,cluster:"",projektnr:""});
+  }
+
+  const filtered = useMemo(()=>{
+    let arr=[...projects];
+    if(search) arr=arr.filter(p=>(p.titel||"").toLowerCase().includes(search.toLowerCase())||(p.cluster||"").toLowerCase().includes(search.toLowerCase())||(p.projektnr||"").toLowerCase().includes(search.toLowerCase()));
+    if(filterPrio.length) arr=arr.filter(p=>filterPrio.includes(p.prio));
+    if(filterStatus==="done") arr=arr.filter(p=>p.fertig===100);
+    if(filterStatus==="active") arr=arr.filter(p=>p.fertig>0&&p.fertig<100);
+    if(filterStatus==="todo") arr=arr.filter(p=>p.fertig===0);
+    if(sortBy==="prio") arr.sort((a,b)=>(PRIO_ORDER[a.prio]??9)-(PRIO_ORDER[b.prio]??9));
+    if(sortBy==="fertig_asc") arr.sort((a,b)=>a.fertig-b.fertig);
+    if(sortBy==="fertig_desc") arr.sort((a,b)=>b.fertig-a.fertig);
+    if(sortBy==="titel") arr.sort((a,b)=>(a.titel||"").localeCompare(b.titel||""));
+    return arr;
+  },[projects,search,filterPrio,filterStatus,sortBy]);
+
+  const stats = useMemo(()=>{
+    const t=projects.length, done=projects.filter(p=>p.fertig===100).length,
+          active=projects.filter(p=>p.fertig>0&&p.fertig<100).length,
+          todo=projects.filter(p=>p.fertig===0).length,
+          avg=Math.round(projects.reduce((s,p)=>s+(p.fertig||0),0)/t);
+    return {t,done,active,todo,avg};
+  },[projects]);
+
+  const byCluster = useMemo(()=>{
+    const map={};
+    filtered.forEach(p=>{
+      const cls=p.cluster?p.cluster.split(", "):["Sonstiges"];
+      cls.forEach(c=>{
+        if(!map[c]) map[c]=[];
+        if(!map[c].find(x=>x._id===p._id)) map[c].push(p);
+      });
+    });
+    return Object.entries(map).sort((a,b)=>a[0].localeCompare(b[0]));
+  },[filtered]);
+
+  // ── LOGIN SCREEN ──────────────────────────────────────────────────────────
+  if (!user) return (
+    <div style={{minHeight:"100vh",background:"#0f172a",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+      <div style={{width:400,background:"#1e293b",border:"1px solid #334155",borderRadius:6,padding:40}} className="fade-in">
+        <div style={{marginBottom:32}}>
+          <div style={{fontSize:10,color:"#475569",letterSpacing:3,marginBottom:8}}>AUTOHAUS SEITZ GRUPPE</div>
+          <div style={{fontSize:24,fontWeight:600,color:"#f1f5f9"}}>IT-Projektplanung</div>
+          <div style={{fontSize:12,color:"#475569",marginTop:4}}>Internes Dashboard – Bitte anmelden</div>
+        </div>
+        <form onSubmit={handleLogin}>
+          <Label label="Benutzername">
+            <input autoFocus value={loginU} onChange={e=>setLoginU(e.target.value)} style={iStyle} placeholder="z.B. admin"/>
+          </Label>
+          <Label label="Passwort">
+            <input type="password" value={loginP} onChange={e=>setLoginP(e.target.value)} style={iStyle}/>
+          </Label>
+          {loginErr && <div style={{color:"#ef4444",fontSize:12,marginBottom:14,padding:"8px 12px",background:"rgba(239,68,68,0.1)",borderRadius:3}}>{loginErr}</div>}
+          <button type="submit" className="btn" style={{width:"100%",padding:12,background:"#3b82f6",border:"none",borderRadius:3,color:"#fff",fontSize:14,fontWeight:600,cursor:"pointer",letterSpacing:0.5}}>
+            Anmelden →
+          </button>
+        </form>
+        <div style={{marginTop:28,padding:16,background:"#0f172a",borderRadius:3,fontSize:11,color:"#475569",lineHeight:2}}>
+          <strong style={{color:"#64748b"}}>Demo-Zugänge</strong><br/>
+          admin / seitz2024 &nbsp;→ Admin (Vollzugriff)<br/>
+          it-leitung / seitz2024 → Editor<br/>
+          gast / gast123 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ Nur lesen
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── MAIN DASHBOARD ────────────────────────────────────────────────────────
+  return (
+    <div style={{minHeight:"100vh",background:"#0f172a"}}>
+      <datalist id="cluster-dl">{ALL_CLUSTERS.map(c=><option key={c} value={c}/>)}</datalist>
+
+      {/* HEADER */}
+      <header style={{background:"#1e293b",borderBottom:"1px solid #334155",padding:"0 24px",position:"sticky",top:0,zIndex:100}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",height:54}}>
+          <div style={{display:"flex",alignItems:"center",gap:20}}>
+            <div>
+              <span style={{fontSize:10,color:"#475569",letterSpacing:2,fontFamily:"'IBM Plex Mono'"}}>SEITZ GRUPPE</span>
+              <span style={{fontSize:14,fontWeight:600,color:"#f1f5f9",marginLeft:14}}>IT-Projektplanung</span>
+            </div>
+            <nav style={{display:"flex",gap:3}}>
+              {[["list","📋 Liste"],["cluster","🗂 Cluster"],["logs","📜 Logs"]].map(([v,label])=>(
+                <button key={v} className="btn" onClick={()=>setView(v)} style={{
+                  padding:"6px 14px",background:view===v?"#3b82f6":"transparent",
+                  border:view===v?"none":"1px solid #334155",borderRadius:3,
+                  color:view===v?"#fff":"#94a3b8",fontSize:12,cursor:"pointer",fontWeight:view===v?600:400
+                }}>{label}</button>
+              ))}
+            </nav>
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:12}}>
+            <span style={{fontSize:10,padding:"3px 10px",background:user.role==="admin"?"#1d4ed8":user.role==="editor"?"#065f46":"#374151",borderRadius:99,color:user.role==="admin"?"#bfdbfe":user.role==="editor"?"#6ee7b7":"#9ca3af"}}>
+              {user.role.toUpperCase()}
+            </span>
+            <span style={{fontSize:12,color:"#94a3b8"}}>{user.username}</span>
+            <button className="btn" onClick={handleLogout} style={{padding:"5px 12px",background:"transparent",border:"1px solid #334155",borderRadius:3,color:"#94a3b8",fontSize:11,cursor:"pointer"}}>Abmelden</button>
+          </div>
+        </div>
+      </header>
+
+      {/* STATS */}
+      <div style={{display:"flex",borderBottom:"1px solid #334155"}}>
+        {[
+          {label:"Gesamt",    val:stats.t,    color:"#64748b"},
+          {label:"Fertig",    val:stats.done, color:"#22c55e"},
+          {label:"Aktiv",     val:stats.active,color:"#f59e0b"},
+          {label:"Offen",     val:stats.todo, color:"#ef4444"},
+          {label:"Ø Fortschritt", val:stats.avg+"%", color:"#3b82f6"},
+        ].map((s,i)=>(
+          <div key={i} style={{flex:1,padding:"14px 20px",borderRight:i<4?"1px solid #334155":"none",background:"#1e293b"}}>
+            <div style={{fontSize:10,color:"#475569",letterSpacing:1,marginBottom:4}}>{s.label.toUpperCase()}</div>
+            <div style={{fontSize:26,fontWeight:600,color:s.color,fontFamily:"'IBM Plex Mono'"}}>{s.val}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{padding:"20px 24px"}}>
+
+        {/* FILTER BAR */}
+        {view!=="logs" && (
+          <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap",alignItems:"center"}}>
+            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 Suche..." style={{...iStyle,width:210}}/>
+            <select value={filterStatus} onChange={e=>setFilterStatus(e.target.value)} style={{...iStyle,width:"auto"}}>
+              <option value="all">Alle Status</option>
+              <option value="done">✅ Abgeschlossen</option>
+              <option value="active">🔄 In Bearbeitung</option>
+              <option value="todo">⏳ Noch offen</option>
+            </select>
+            <select value={sortBy} onChange={e=>setSortBy(e.target.value)} style={{...iStyle,width:"auto"}}>
+              <option value="prio">Sortierung: Priorität</option>
+              <option value="fertig_asc">Fortschritt ↑</option>
+              <option value="fertig_desc">Fortschritt ↓</option>
+              <option value="titel">Titel A–Z</option>
+            </select>
+            <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
+              {ALL_PRIOS.map(p=>(
+                <button key={p} className="btn" onClick={()=>setFilterPrio(prev=>prev.includes(p)?prev.filter(x=>x!==p):[...prev,p])} style={{
+                  padding:"5px 11px",fontSize:11,fontWeight:700,cursor:"pointer",
+                  background:filterPrio.includes(p)?PRIO_COLORS[p]:"#1e293b",
+                  border:`1px solid ${filterPrio.includes(p)?PRIO_COLORS[p]:"#334155"}`,
+                  borderRadius:3,color:filterPrio.includes(p)?"#fff":"#64748b"
+                }}>{p}</button>
+              ))}
+              {filterPrio.length>0 && <button className="btn" onClick={()=>setFilterPrio([])} style={{padding:"5px 10px",background:"transparent",border:"1px solid #334155",borderRadius:3,color:"#64748b",fontSize:11,cursor:"pointer"}}>✕ Reset</button>}
+            </div>
+            {canEdit && (
+              <button className="btn" onClick={()=>setShowAdd(true)} style={{marginLeft:"auto",padding:"8px 18px",background:"#3b82f6",border:"none",borderRadius:3,color:"#fff",fontSize:13,cursor:"pointer",fontWeight:600}}>
+                + Projekt hinzufügen
+              </button>
+            )}
+          </div>
+        )}
+
+        {view!=="logs" && <div style={{fontSize:11,color:"#475569",marginBottom:12}}>{filtered.length} von {projects.length} Projekten</div>}
+
+        {/* LIST VIEW */}
+        {view==="list" && (
+          <div style={{background:"#1e293b",border:"1px solid #334155",borderRadius:4,overflow:"hidden"}}>
+            <div style={{display:"grid",gridTemplateColumns:"80px 1fr 180px 140px 80px",padding:"9px 16px",borderBottom:"1px solid #334155",fontSize:10,color:"#475569",letterSpacing:2}}>
+              <div>PRIO</div><div>PROJEKT</div><div>CLUSTER</div><div>FORTSCHRITT</div><div>AKTIONEN</div>
+            </div>
+            {filtered.map(p=>(
+              <ProjectRow key={p._id} project={p} canEdit={canEdit}
+                onSave={handleSave}
+                onDelete={()=>handleDelete(p._id)}/>
+            ))}
+            {filtered.length===0 && <div style={{padding:40,textAlign:"center",color:"#475569"}}>Keine Projekte gefunden.</div>}
+          </div>
+        )}
+
+        {/* CLUSTER VIEW */}
+        {view==="cluster" && (
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(340px,1fr))",gap:16}}>
+            {byCluster.map(([cluster,projs])=>{
+              const avg=Math.round(projs.reduce((s,p)=>s+p.fertig,0)/projs.length);
+              const isOpen=expandedCluster===cluster;
+              return (
+                <div key={cluster} className="cluster-card" style={{background:"#1e293b",border:"1px solid #334155",borderRadius:4,overflow:"hidden"}}>
+                  <div onClick={()=>setExpandedCluster(isOpen?null:cluster)} style={{padding:"16px 18px",cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                    <div>
+                      <div style={{fontSize:13,fontWeight:600,color:"#f1f5f9",marginBottom:4}}>{cluster}</div>
+                      <div style={{fontSize:11,color:"#475569"}}>{projs.length} Projekte · {isOpen?"▲ einklappen":"▼ aufklappen"}</div>
+                    </div>
+                    <div style={{textAlign:"right",minWidth:70}}>
+                      <div style={{fontSize:22,fontWeight:700,color:getProgressColor(avg),fontFamily:"'IBM Plex Mono'"}}>{avg}%</div>
+                      <div style={{width:70,marginTop:6}}><ProgressBar value={avg} height={5}/></div>
+                    </div>
+                  </div>
+                  {isOpen && (
+                    <div style={{borderTop:"1px solid #334155"}} className="fade-in">
+                      {projs.map(p=>(
+                        <div key={p._id} style={{padding:"10px 18px",borderBottom:"1px solid #0f172a",display:"flex",alignItems:"center",gap:10}}>
+                          <span style={{fontSize:10,fontWeight:700,color:PRIO_COLORS[p.prio]||"#6b7280",fontFamily:"'IBM Plex Mono'",minWidth:40}}>{p.prio||"—"}</span>
+                          <span style={{fontSize:12,color:"#cbd5e1",flex:1,lineHeight:1.3}}>{p.titel}</span>
+                          <span style={{fontSize:12,color:getProgressColor(p.fertig),fontFamily:"'IBM Plex Mono'",minWidth:36,textAlign:"right"}}>{p.fertig}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* LOGS VIEW */}
+        {view==="logs" && (
+          <div>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+              <div style={{fontSize:13,color:"#94a3b8"}}>{logs.length} Einträge</div>
+              {user.role==="admin" && logs.length>0 && (
+                <button className="btn" onClick={()=>setLogs([])} style={{padding:"6px 12px",background:"transparent",border:"1px solid #ef4444",borderRadius:3,color:"#ef4444",fontSize:11,cursor:"pointer"}}>Logs leeren</button>
+              )}
+            </div>
+            {logs.length===0
+              ? <div style={{padding:60,textAlign:"center",color:"#475569",fontSize:14}}>Noch keine Änderungen protokolliert.<br/><span style={{fontSize:12}}>Bearbeite oder füge ein Projekt hinzu – es erscheint hier.</span></div>
+              : (
+                <div style={{background:"#1e293b",border:"1px solid #334155",borderRadius:4,overflow:"hidden"}}>
+                  <div style={{display:"grid",gridTemplateColumns:"160px 100px 100px 200px 1fr",padding:"9px 16px",borderBottom:"1px solid #334155",fontSize:10,color:"#475569",letterSpacing:2}}>
+                    <div>ZEITPUNKT</div><div>NUTZER</div><div>AKTION</div><div>PROJEKT</div><div>DETAILS</div>
+                  </div>
+                  {logs.map(l=>(
+                    <div key={l.id} style={{display:"grid",gridTemplateColumns:"160px 100px 100px 200px 1fr",padding:"10px 16px",borderBottom:"1px solid #0f172a",fontSize:12,alignItems:"center"}}>
+                      <div style={{color:"#64748b",fontFamily:"'IBM Plex Mono'",fontSize:10}}>{l.ts}</div>
+                      <div style={{color:"#94a3b8"}}>{l.user}</div>
+                      <div style={{color:l.action==="Gelöscht"?"#ef4444":l.action==="Hinzugefügt"?"#22c55e":"#f59e0b",fontWeight:600}}>{l.action}</div>
+                      <div style={{color:"#cbd5e1",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{l.projekt}</div>
+                      <div style={{color:"#64748b"}}>{l.details}</div>
+                    </div>
+                  ))}
+                </div>
+              )
+            }
+          </div>
+        )}
+      </div>
+
+      {/* ADD MODAL */}
+      {showAdd && (
+        <div className="modal-overlay" onClick={e=>{if(e.target===e.currentTarget)setShowAdd(false);}}>
+          <div style={{background:"#1e293b",border:"1px solid #334155",borderRadius:6,padding:36,width:520,maxWidth:"95vw"}} className="fade-in">
+            <div style={{fontSize:18,fontWeight:600,color:"#f1f5f9",marginBottom:24}}>Neues Projekt hinzufügen</div>
+            <Label label="Titel *">
+              <input autoFocus value={newP.titel} onChange={e=>setNewP(f=>({...f,titel:e.target.value}))} style={iStyle} placeholder="Projekttitel"/>
+            </Label>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+              <Label label="Priorität">
+                <select value={newP.prio} onChange={e=>setNewP(f=>({...f,prio:e.target.value}))} style={iStyle}>
+                  {ALL_PRIOS.map(p=><option key={p}>{p}</option>)}
+                </select>
+              </Label>
+              <Label label="Fortschritt (%)">
+                <input type="number" min="0" max="100" value={newP.fertig} onChange={e=>setNewP(f=>({...f,fertig:e.target.value}))} style={iStyle}/>
+              </Label>
+            </div>
+            <Label label="Cluster">
+              <input value={newP.cluster} onChange={e=>setNewP(f=>({...f,cluster:e.target.value}))} style={iStyle} placeholder="z.B. IT-Security / Endpoint / Hardening" list="cluster-dl"/>
+            </Label>
+            <Label label="Projektnr. (optional)">
+              <input value={newP.projektnr} onChange={e=>setNewP(f=>({...f,projektnr:e.target.value}))} style={iStyle} placeholder="#000#"/>
+            </Label>
+            <div style={{display:"flex",gap:10,marginTop:8,justifyContent:"flex-end"}}>
+              <button className="btn" onClick={()=>setShowAdd(false)} style={{padding:"9px 18px",background:"transparent",border:"1px solid #334155",borderRadius:3,color:"#94a3b8",cursor:"pointer",fontSize:13}}>Abbrechen</button>
+              <button className="btn" onClick={handleAdd} disabled={!newP.titel} style={{padding:"9px 20px",background:newP.titel?"#3b82f6":"#1e3a5f",border:"none",borderRadius:3,color:newP.titel?"#fff":"#64748b",cursor:newP.titel?"pointer":"not-allowed",fontSize:13,fontWeight:600}}>
+                Hinzufügen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+</script>
+</body>
+</html>
