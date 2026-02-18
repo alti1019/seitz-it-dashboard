@@ -48,6 +48,7 @@ export function useProjekte() {
       .select()
       .single()
     if (error) throw error
+    await fetchProjekte()
     return data
   }
 
@@ -62,6 +63,7 @@ export function useProjekte() {
       .update(updates)
       .eq('id', id)
     if (error) throw error
+    await fetchProjekte()
   }
 
   /**
@@ -74,6 +76,7 @@ export function useProjekte() {
       .delete()
       .eq('id', id)
     if (error) throw error
+    await fetchProjekte()
   }
 
   return { projekte, loading, error, addProjekt, updateProjekt, deleteProjekt }
