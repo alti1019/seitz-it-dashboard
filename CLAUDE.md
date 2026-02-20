@@ -9,21 +9,24 @@
 
 ## Tech-Stack
 - **Framework:** Next.js 14 (App Router) — JavaScript (kein TypeScript)
-- **Backend/DB:** Supabase (PostgreSQL + Auth + Realtime)
+- **Backend/DB:** Supabase (PostgreSQL + Realtime, kein Auth)
 - **Hosting:** Vercel (Auto-Deploy via Git)
 - **Styling:** Inline-Styles (IBM Plex Sans + IBM Plex Mono)
 - **Fonts:** IBM Plex via next/font/google (lokal gehostet, DSGVO-konform)
 
 ## Features
 - [x] Projekt-Setup (Next.js + Supabase)
-- [ ] Supabase Schema (projekte + audit_log)
-- [ ] Auth mit Rollen (admin/editor/viewer)
-- [ ] Projekt-Tabelle mit Inline-Edit
-- [ ] Cluster-Ansicht (Karten)
-- [ ] Aenderungsprotokoll (Audit Log)
-- [ ] Spalten-Sortierung
-- [ ] Echtzeit-Updates (Realtime)
-- [ ] Vercel Deployment
+- [x] Supabase Schema (projekte + audit_log + benutzer)
+- [x] UserPicker statt Login (Dropdown ohne Passwort, localStorage)
+- [x] Projekt-Tabelle mit Inline-Edit
+- [x] Cluster-Ansicht (Karten)
+- [x] Aenderungsprotokoll (Audit Log)
+- [x] Spalten-Sortierung
+- [x] Echtzeit-Updates (Realtime)
+- [x] Vercel Deployment
+- [x] Fortschritt-Filter als Toggle-Buttons (statt Dropdown)
+- [x] Bereich-Reiter (Gesamt / IT / Prozessmanagement)
+- [x] Start-/Enddatum pro Projekt (Enddatum auto bei 100%)
 
 ## Architektur
 ```
@@ -32,22 +35,24 @@ src/
     layout.jsx          # IBM Plex Fonts, globale Styles
     page.jsx            # Hauptseite (App Entry Point)
   components/
-    Login.jsx
-    ProjectRow.jsx
+    UserPicker.jsx      # Nutzerauswahl (ersetzt Login.jsx)
+    ProjectRow.jsx      # mit Bereich-Badge + Datum
     ProjectTable.jsx    # mit Spalten-Sortierung
     ClusterView.jsx
-    AddProjectModal.jsx
+    AddProjectModal.jsx # mit Bereich + Startdatum
     AuditLogPanel.jsx
     StatsBar.jsx
   hooks/
-    useAuth.js
+    useAuth.js          # localStorage-basiert (kein Supabase Auth)
+    useBenutzer.js      # CRUD fuer benutzer-Tabelle
     useProjekte.js      # mit Realtime
     useAuditLog.js
   lib/
     supabase.js
-    constants.js        # PRIO_ORDER, PRIO_COLORS etc.
+    constants.js        # PRIO_ORDER, PRIO_COLORS, STATUS_OPTIONS, BEREICHE
 supabase/
-  schema.sql            # im Supabase SQL Editor ausfuehren
+  schema.sql            # Vollstaendiges Schema (Neuinstallation)
+  migration-v2.sql      # Migration: bereich, datum, benutzer
   seed.sql              # Initialdaten (100 Projekte)
 ```
 
@@ -57,12 +62,12 @@ NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGci...
 ```
 
-## Benutzerrollen
-| Rolle   | Rechte                              |
-|---------|-------------------------------------|
-| admin   | Lesen, Schreiben, Loeschen, Logs    |
-| editor  | Lesen, Schreiben                    |
-| viewer  | Nur Lesen                           |
+## Benutzerverwaltung
+- Keine Rollen, keine Passwoerter
+- Einfacher Name-Picker (UserPicker.jsx) mit Dropdown
+- Namen in `benutzer`-Tabelle (Supabase), neue per "Name hinzufuegen"
+- Auswahl wird in localStorage gespeichert
+- Alle Nutzer haben Vollzugriff (canEdit = true)
 
 ## Konventionen
 - Code-Kommentare und Variablennamen: Englisch
