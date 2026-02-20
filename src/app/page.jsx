@@ -1,10 +1,11 @@
 'use client'
 import { useState, useMemo } from 'react'
 import { useAuth } from '@/hooks/useAuth'
+import { useBenutzer } from '@/hooks/useBenutzer'
 import { useProjekte } from '@/hooks/useProjekte'
 import { useAuditLog } from '@/hooks/useAuditLog'
-import { ALL_PRIOS, PRIO_COLORS, inputStyle } from '@/lib/constants'
-import Login from '@/components/Login'
+import { ALL_PRIOS, PRIO_COLORS, STATUS_OPTIONS, BEREICHE, inputStyle } from '@/lib/constants'
+import UserPicker from '@/components/UserPicker'
 import StatsBar from '@/components/StatsBar'
 import ProjectTable from '@/components/ProjectTable'
 import ClusterView from '@/components/ClusterView'
@@ -15,14 +16,16 @@ import AuditLogPanel from '@/components/AuditLogPanel'
  * Main dashboard page. Handles auth gate, filtering, and view switching.
  */
 export default function Home() {
-  const { user, loading: authLoading, signIn, signOut, canEdit, role, displayName } = useAuth()
+  const { user, loading: authLoading, selectUser, clearUser, canEdit, displayName } = useAuth()
+  const { benutzer, loading: benutzerLoading, addBenutzer } = useBenutzer()
   const { projekte, loading, addProjekt, updateProjekt, deleteProjekt } = useProjekte()
   const { logs, loading: logsLoading, addLog } = useAuditLog()
 
   const [view, setView] = useState('list')
   const [search, setSearch] = useState('')
   const [filterPrio, setFilterPrio] = useState([])
-  const [filterStatus, setFilterStatus] = useState('all')
+  const [filterStatus, setFilterStatus] = useState([])
+  const [filterBereich, setFilterBereich] = useState('Gesamt')
   const [showAdd, setShowAdd] = useState(false)
 
   // Derive all cluster names from projects
@@ -30,9 +33,10 @@ export default function Home() {
     return [...new Set(projekte.flatMap(r => r.cluster ? r.cluster.split(', ') : ['Sonstiges']))].sort()
   }, [projekte])
 
-  // Filter projects based on search, prio, and status
+  // Filter projects based on search, prio, status, and bereich
   const filtered = useMemo(() => {
     let arr = [...projekte]
+    if (filterBereich !== 'Gesamt') arr = arr.filter(p => p.bereich === filterBereich)
     if (search) {
       const q = search.toLowerCase()
       arr = arr.filter(p =>
@@ -42,11 +46,22 @@ export default function Home() {
       )
     }
     if (filterPrio.length) arr = arr.filter(p => filterPrio.includes(p.prio))
-    if (filterStatus === 'done') arr = arr.filter(p => p.fertig === 100)
-    if (filterStatus === 'active') arr = arr.filter(p => p.fertig > 0 && p.fertig < 100)
-    if (filterStatus === 'todo') arr = arr.filter(p => p.fertig === 0)
+    if (filterStatus.length) {
+      arr = arr.filter(p => {
+        if (filterStatus.includes('done') && p.fertig === 100) return true
+        if (filterStatus.includes('active') && p.fertig > 0 && p.fertig < 100) return true
+        if (filterStatus.includes('todo') && p.fertig === 0) return true
+        return false
+      })
+    }
     return arr
-  }, [projekte, search, filterPrio, filterStatus])
+  }, [projekte, search, filterPrio, filterStatus, filterBereich])
+
+  // Projects filtered by bereich only (for StatsBar)
+  const bereichProjekte = useMemo(() => {
+    if (filterBereich === 'Gesamt') return projekte
+    return projekte.filter(p => p.bereich === filterBereich)
+  }, [projekte, filterBereich])
 
   async function handleSave(updated) {
     const original = projekte.find(p => p.id === updated.id)
@@ -57,15 +72,30 @@ export default function Home() {
     if (original.prio !== updated.prio) changes.push(`Prio: ${original.prio} → ${updated.prio}`)
     if (original.cluster !== updated.cluster) changes.push('Cluster geändert')
     if (original.titel !== updated.titel) changes.push('Titel geändert')
+    if (original.bereich !== updated.bereich) changes.push(`Bereich: ${original.bereich} → ${updated.bereich}`)
+    if (original.started_at !== updated.started_at) changes.push(`Startdatum: ${updated.started_at || '—'}`)
+
+    // Auto-set ended_at when progress reaches 100%
+    const updateData = {
+      prio: updated.prio,
+      titel: updated.titel,
+      cluster: updated.cluster,
+      fertig: updated.fertig,
+      projektnr: updated.projektnr,
+      bereich: updated.bereich,
+      started_at: updated.started_at || null,
+    }
+
+    if (updated.fertig === 100 && original.fertig !== 100) {
+      updateData.ended_at = new Date().toISOString()
+      changes.push('Abgeschlossen am: ' + new Date().toLocaleDateString('de-DE'))
+    } else if (updated.fertig < 100 && original.fertig === 100) {
+      updateData.ended_at = null
+      changes.push('Abschluss zurückgesetzt')
+    }
 
     try {
-      await updateProjekt(updated.id, {
-        prio: updated.prio,
-        titel: updated.titel,
-        cluster: updated.cluster,
-        fertig: updated.fertig,
-        projektnr: updated.projektnr,
-      })
+      await updateProjekt(updated.id, updateData)
       if (changes.length) {
         await addLog(displayName, 'Bearbeitet', updated.titel, changes.join(', '))
       }
@@ -89,8 +119,8 @@ export default function Home() {
 
   async function handleAdd(newProject) {
     try {
-      const inserted = await addProjekt(newProject)
-      await addLog(displayName, 'Hinzugefügt', newProject.titel, `Prio: ${newProject.prio}, Cluster: ${newProject.cluster || '—'}`)
+      await addProjekt(newProject)
+      await addLog(displayName, 'Hinzugefügt', newProject.titel, `Prio: ${newProject.prio}, Bereich: ${newProject.bereich || 'IT'}, Cluster: ${newProject.cluster || '—'}`)
     } catch (err) {
       alert('Fehler beim Hinzufügen: ' + err.message)
     }
@@ -105,8 +135,17 @@ export default function Home() {
     )
   }
 
-  // Auth gate
-  if (!user) return <Login onLogin={signIn} />
+  // Auth gate — UserPicker instead of Login
+  if (!user) {
+    return (
+      <UserPicker
+        benutzer={benutzer}
+        loading={benutzerLoading}
+        onSelect={selectUser}
+        onAddName={addBenutzer}
+      />
+    )
+  }
 
   return (
     <main style={{ minHeight: '100vh', background: '#0f172a' }}>
@@ -140,28 +179,42 @@ export default function Home() {
             </nav>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{
-              fontSize: 10, padding: '3px 10px',
-              background: role === 'admin' ? '#1d4ed8' : role === 'editor' ? '#065f46' : '#374151',
-              borderRadius: 99,
-              color: role === 'admin' ? '#bfdbfe' : role === 'editor' ? '#6ee7b7' : '#9ca3af'
-            }}>
-              {role.toUpperCase()}
-            </span>
             <span style={{ fontSize: 12, color: '#94a3b8' }}>{displayName}</span>
             <button
               className="btn"
-              onClick={signOut}
+              onClick={clearUser}
               style={{ padding: '5px 12px', background: 'transparent', border: '1px solid #334155', borderRadius: 3, color: '#94a3b8', fontSize: 11, cursor: 'pointer' }}
             >
-              Abmelden
+              Nutzer wechseln
             </button>
           </div>
         </div>
       </header>
 
+      {/* BEREICH TABS */}
+      <div style={{ background: '#1e293b', borderBottom: '1px solid #334155', padding: '0 24px' }}>
+        <div style={{ display: 'flex', gap: 0 }}>
+          {BEREICHE.map(b => (
+            <button
+              key={b}
+              className="btn"
+              onClick={() => setFilterBereich(b)}
+              style={{
+                padding: '10px 20px', fontSize: 12, cursor: 'pointer',
+                background: 'transparent', border: 'none',
+                borderBottom: filterBereich === b ? '2px solid #3b82f6' : '2px solid transparent',
+                color: filterBereich === b ? '#f1f5f9' : '#64748b',
+                fontWeight: filterBereich === b ? 600 : 400,
+              }}
+            >
+              {b}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* STATS */}
-      <StatsBar projekte={projekte} />
+      <StatsBar projekte={bereichProjekte} />
 
       <div style={{ padding: '20px 24px' }}>
         {/* FILTER BAR */}
@@ -173,12 +226,32 @@ export default function Home() {
               placeholder="Suche..."
               style={{ ...inputStyle, width: 210 }}
             />
-            <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{ ...inputStyle, width: 'auto' }}>
-              <option value="all">Alle Status</option>
-              <option value="done">Abgeschlossen</option>
-              <option value="active">In Bearbeitung</option>
-              <option value="todo">Noch offen</option>
-            </select>
+            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+              {STATUS_OPTIONS.map(s => (
+                <button
+                  key={s.key}
+                  className="btn"
+                  onClick={() => setFilterStatus(prev => prev.includes(s.key) ? prev.filter(x => x !== s.key) : [...prev, s.key])}
+                  style={{
+                    padding: '5px 11px', fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                    background: filterStatus.includes(s.key) ? s.color : '#1e293b',
+                    border: `1px solid ${filterStatus.includes(s.key) ? s.color : '#334155'}`,
+                    borderRadius: 3, color: filterStatus.includes(s.key) ? '#fff' : '#64748b'
+                  }}
+                >
+                  {s.label}
+                </button>
+              ))}
+              {filterStatus.length > 0 && (
+                <button
+                  className="btn"
+                  onClick={() => setFilterStatus([])}
+                  style={{ padding: '5px 10px', background: 'transparent', border: '1px solid #334155', borderRadius: 3, color: '#64748b', fontSize: 11, cursor: 'pointer' }}
+                >
+                  Reset
+                </button>
+              )}
+            </div>
             <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
               {ALL_PRIOS.map(p => (
                 <button
@@ -219,7 +292,7 @@ export default function Home() {
 
         {view !== 'logs' && (
           <div style={{ fontSize: 11, color: '#475569', marginBottom: 12 }}>
-            {filtered.length} von {projekte.length} Projekten
+            {filtered.length} von {bereichProjekte.length} Projekten
           </div>
         )}
 
@@ -236,6 +309,7 @@ export default function Home() {
             onSave={handleSave}
             onDelete={handleDelete}
             allClusters={allClusters}
+            filterBereich={filterBereich}
           />
         )}
 

@@ -10,10 +10,17 @@ import { ALL_PRIOS, inputStyle } from '@/lib/constants'
  * @param {Array} props.allClusters - All cluster names for autocomplete
  */
 export default function AddProjectModal({ onAdd, onClose, allClusters }) {
-  const [newP, setNewP] = useState({ titel: '', prio: 'A', fertig: 0, cluster: '', projektnr: '' })
+  const [newP, setNewP] = useState({
+    titel: '', prio: 'A', fertig: 0, cluster: '',
+    projektnr: '', bereich: 'IT', started_at: '',
+  })
 
   function handleAdd() {
-    onAdd({ ...newP, fertig: Number(newP.fertig) })
+    onAdd({
+      ...newP,
+      fertig: Number(newP.fertig),
+      started_at: newP.started_at || null,
+    })
     onClose()
   }
 
@@ -51,6 +58,25 @@ export default function AddProjectModal({ onAdd, onClose, allClusters }) {
               max="100"
               value={newP.fertig}
               onChange={e => setNewP(f => ({ ...f, fertig: e.target.value }))}
+              style={inputStyle}
+            />
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ fontSize: 10, color: '#64748b', letterSpacing: 2, marginBottom: 5 }}>BEREICH</div>
+            <select value={newP.bereich} onChange={e => setNewP(f => ({ ...f, bereich: e.target.value }))} style={inputStyle}>
+              <option value="IT">IT</option>
+              <option value="Prozessmanagement">Prozessmanagement</option>
+            </select>
+          </div>
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ fontSize: 10, color: '#64748b', letterSpacing: 2, marginBottom: 5 }}>STARTDATUM</div>
+            <input
+              type="date"
+              value={newP.started_at}
+              onChange={e => setNewP(f => ({ ...f, started_at: e.target.value }))}
               style={inputStyle}
             />
           </div>

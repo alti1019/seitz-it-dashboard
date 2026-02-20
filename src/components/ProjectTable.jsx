@@ -36,7 +36,7 @@ function SortableHeader({ label, colKey, sortConfig, onSort }) {
  * @param {Function} props.onDelete - Callback for deleting a project
  * @param {Array} props.allClusters - All cluster names for autocomplete
  */
-export default function ProjectTable({ projekte, canEdit, onSave, onDelete, allClusters }) {
+export default function ProjectTable({ projekte, canEdit, onSave, onDelete, allClusters, filterBereich }) {
   const [sortConfig, setSortConfig] = useState({ key: 'prio', direction: 'asc' })
 
   const sorted = useMemo(() => {
@@ -91,6 +91,7 @@ export default function ProjectTable({ projekte, canEdit, onSave, onDelete, allC
           onSave={onSave}
           onDelete={() => onDelete(p.id)}
           allClusters={allClusters}
+          showBereich={filterBereich === 'Gesamt'}
         />
       ))}
       {sorted.length === 0 && (

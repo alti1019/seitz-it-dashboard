@@ -38,7 +38,7 @@ export function useProjekte() {
 
   /**
    * Insert a new project into the database.
-   * @param {Object} projekt - Project data (titel, prio, fertig, cluster, projektnr)
+   * @param {Object} projekt - Project data (titel, prio, fertig, cluster, projektnr, bereich, started_at)
    * @returns {Object} The inserted project
    */
   async function addProjekt(projekt) {
@@ -55,7 +55,7 @@ export function useProjekte() {
   /**
    * Update an existing project by ID.
    * @param {string} id - UUID of the project
-   * @param {Object} updates - Fields to update
+   * @param {Object} updates - Fields to update (prio, titel, cluster, fertig, projektnr, bereich, started_at, ended_at)
    */
   async function updateProjekt(id, updates) {
     const { error } = await getSupabase()

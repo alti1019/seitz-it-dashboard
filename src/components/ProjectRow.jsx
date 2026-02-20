@@ -4,6 +4,16 @@ import { PRIO_COLORS, ALL_PRIOS, getProgressColor, inputStyle } from '@/lib/cons
 import ProgressBar from './ProgressBar'
 
 /**
+ * Formats a date string to German locale (DD.MM.YYYY).
+ * @param {string|null} dateStr - ISO date string or null
+ * @returns {string} Formatted date or '—'
+ */
+function formatDate(dateStr) {
+  if (!dateStr) return '—'
+  return new Date(dateStr).toLocaleDateString('de-DE')
+}
+
+/**
  * Single project row with inline editing capability.
  * @param {Object} props
  * @param {Object} props.project - Project data
@@ -11,8 +21,9 @@ import ProgressBar from './ProgressBar'
  * @param {Function} props.onSave - Callback with updated project
  * @param {Function} props.onDelete - Callback to delete the project
  * @param {Array} props.allClusters - List of all cluster names for autocomplete
+ * @param {boolean} props.showBereich - Whether to show the bereich badge
  */
-export default function ProjectRow({ project, canEdit, onSave, onDelete, allClusters }) {
+export default function ProjectRow({ project, canEdit, onSave, onDelete, allClusters, showBereich }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState({ ...project })
 
@@ -57,6 +68,28 @@ export default function ProjectRow({ project, canEdit, onSave, onDelete, allClus
             <span style={{ color: '#64748b', fontSize: 12 }}>%</span>
           </div>
         </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '140px 160px 1fr', gap: 8, marginBottom: 10 }}>
+          <div>
+            <div style={{ fontSize: 10, color: '#64748b', letterSpacing: 1, marginBottom: 3 }}>BEREICH</div>
+            <select
+              value={draft.bereich || 'IT'}
+              onChange={e => setDraft(f => ({ ...f, bereich: e.target.value }))}
+              style={inputStyle}
+            >
+              <option value="IT">IT</option>
+              <option value="Prozessmanagement">Prozessmanagement</option>
+            </select>
+          </div>
+          <div>
+            <div style={{ fontSize: 10, color: '#64748b', letterSpacing: 1, marginBottom: 3 }}>STARTDATUM</div>
+            <input
+              type="date"
+              value={draft.started_at || ''}
+              onChange={e => setDraft(f => ({ ...f, started_at: e.target.value }))}
+              style={inputStyle}
+            />
+          </div>
+        </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button
             className="btn"
@@ -90,10 +123,25 @@ export default function ProjectRow({ project, canEdit, onSave, onDelete, allClus
         {project.prio || '—'}
       </div>
       <div>
-        <div style={{ fontSize: 13, color: '#e2e8f0', lineHeight: 1.4 }}>{project.titel}</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontSize: 13, color: '#e2e8f0', lineHeight: 1.4 }}>{project.titel}</span>
+          {showBereich && project.bereich && (
+            <span style={{
+              fontSize: 9, padding: '1px 6px', borderRadius: 3,
+              background: project.bereich === 'IT' ? '#1e3a5f' : '#3b1f5e',
+              color: project.bereich === 'IT' ? '#93c5fd' : '#c4b5fd',
+              fontWeight: 600, letterSpacing: 0.5, whiteSpace: 'nowrap',
+            }}>
+              {project.bereich === 'Prozessmanagement' ? 'PM' : project.bereich}
+            </span>
+          )}
+        </div>
         {project.projektnr && (
           <div style={{ fontSize: 10, color: '#475569', fontFamily: "'IBM Plex Mono', monospace", marginTop: 2 }}>{project.projektnr}</div>
         )}
+        <div style={{ fontSize: 10, color: '#475569', marginTop: 2 }}>
+          Start: {formatDate(project.started_at)} · Ende: {formatDate(project.ended_at)}
+        </div>
       </div>
       <div style={{ paddingRight: 8 }}>
         {(project.cluster || 'Sonstiges').split(', ').map((c, i) => (

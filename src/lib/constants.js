@@ -25,6 +25,16 @@ export const PRIO_COLORS = {
 /** All priority levels in order */
 export const ALL_PRIOS = ['A++++', 'A+++', 'A++', 'A+', 'A', 'B', 'C', '?']
 
+/** Status filter options with colors */
+export const STATUS_OPTIONS = [
+  { key: 'done', label: 'Abgeschlossen', color: '#22c55e' },
+  { key: 'active', label: 'In Bearbeitung', color: '#f59e0b' },
+  { key: 'todo', label: 'Noch offen', color: '#64748b' },
+]
+
+/** Bereich tabs for project categories */
+export const BEREICHE = ['Gesamt', 'IT', 'Prozessmanagement']
+
 /**
  * Returns a color based on completion percentage.
  * @param {number} p - Completion percentage (0-100)
