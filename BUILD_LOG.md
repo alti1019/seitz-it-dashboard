@@ -95,6 +95,22 @@ Jeder Schritt wird nach Abschluss hier eingetragen.
 
 ---
 
+## Schritt 11 – Dashboard-Erweiterung: 4 neue Features
+**Was:** Vier Erweiterungen in einem Schritt umgesetzt:
+1. **Fortschritt-Filter als Toggle-Buttons** — `<select>` Dropdown durch farbige Toggle-Buttons ersetzt (gleiches Pattern wie Prio-Filter). Multi-Select mit Reset-Button.
+2. **Bereich-Reiter (Gesamt/IT/Prozessmanagement)** — Neue Spalte `bereich` in der DB. Tab-Leiste unterhalb des Headers filtert Projekte nach Bereich. Badge am Projekttitel in der Gesamt-Ansicht. StatsBar reagiert ebenfalls auf Bereich-Filter.
+3. **UserPicker statt Login** — Supabase Auth komplett entfernt. Neue `benutzer`-Tabelle mit 11 vordefinierten Namen. Einfacher Dropdown ohne Passwort, Name in localStorage. Option "Name hinzufuegen" fuer neue Eintraege. RLS-Policies auf `anon` erweitert.
+4. **Start-/Enddatum pro Projekt** — Manuelles Startdatum (`started_at DATE`) und automatisches Enddatum (`ended_at TIMESTAMPTZ`). Enddatum wird gesetzt wenn Fortschritt auf 100% geht, und zurueckgesetzt bei <100%. Datum-Anzeige unterhalb des Projekttitels.
+
+**Warum:** Die Erweiterungen machen das Dashboard praxistauglicher: Bereich-Trennung fuer IT vs. Prozessmanagement, schnellere Filter-UX, vereinfachte Nutzerauswahl ohne Passwort-Huerden, und Zeiterfassung fuer Projektlaufzeiten.
+**Datenbank:** `supabase/migration-v2.sql` — 3 neue Spalten (`bereich`, `started_at`, `ended_at`), neue Tabelle `benutzer`, aktualisierte RLS-Policies.
+**Neue Dateien:** `src/components/UserPicker.jsx`, `src/hooks/useBenutzer.js`, `supabase/migration-v2.sql`
+**Geloeschte Dateien:** `src/components/Login.jsx`
+**Geaenderte Dateien:** `src/app/page.jsx`, `src/components/AddProjectModal.jsx`, `src/components/ProjectRow.jsx`, `src/components/ProjectTable.jsx`, `src/hooks/useAuth.js`, `src/hooks/useProjekte.js`, `src/lib/constants.js`, `supabase/schema.sql`
+**Status:** Abgeschlossen
+
+---
+
 ## Zusammenfassung
 
 | Schritt | Beschreibung | Commits |
@@ -109,5 +125,6 @@ Jeder Schritt wird nach Abschluss hier eingetragen.
 | 8 | Next.js Seiten + IBM Plex Fonts | 1 |
 | 9 | Vercel Deployment | 1 |
 | 10 | Architektur + Dokumentation | 1 |
+| 11 | 4 neue Features (Filter, Bereiche, UserPicker, Datum) | 2 |
 
-**Gesamt: 10 Schritte, 11 Commits, 1 Session mit Claude Code.**
+**Gesamt: 11 Schritte, 13 Commits, 2 Sessions mit Claude Code.**
