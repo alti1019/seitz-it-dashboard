@@ -18,7 +18,7 @@ import AuditLogPanel from '@/components/AuditLogPanel'
 export default function Home() {
   const { user, loading: authLoading, selectUser, clearUser, canEdit, displayName } = useAuth()
   const { benutzer, loading: benutzerLoading, addBenutzer } = useBenutzer()
-  const { projekte, loading, addProjekt, updateProjekt, deleteProjekt } = useProjekte()
+  const { projekte, loading, error: projekteError, addProjekt, updateProjekt, deleteProjekt } = useProjekte()
   const { logs, loading: logsLoading, addLog } = useAuditLog()
 
   const [view, setView] = useState('list')
@@ -293,6 +293,13 @@ export default function Home() {
         {view !== 'logs' && (
           <div style={{ fontSize: 11, color: '#475569', marginBottom: 12 }}>
             {filtered.length} von {bereichProjekte.length} Projekten
+          </div>
+        )}
+
+        {/* Error state */}
+        {projekteError && (
+          <div style={{ padding: 16, marginBottom: 12, background: '#450a0a', border: '1px solid #7f1d1d', borderRadius: 4, color: '#fca5a5', fontSize: 13 }}>
+            <strong>Supabase-Fehler:</strong> {projekteError}
           </div>
         )}
 
