@@ -16,7 +16,7 @@ import AuditLogPanel from '@/components/AuditLogPanel'
  * Main dashboard page. Handles auth gate, filtering, and view switching.
  */
 export default function Home() {
-  const { user, loading: authLoading, selectUser, clearUser, canEdit, displayName } = useAuth()
+  const { user, loading: authLoading, authenticated, login, selectUser, clearUser, logout, canEdit, displayName } = useAuth()
   const { benutzer, loading: benutzerLoading, addBenutzer } = useBenutzer()
   const { projekte, loading, error: projekteError, addProjekt, updateProjekt, deleteProjekt } = useProjekte()
   const { logs, loading: logsLoading, addLog } = useAuditLog()
@@ -135,10 +135,12 @@ export default function Home() {
     )
   }
 
-  // Auth gate — UserPicker instead of Login
-  if (!user) {
+  // Auth gate — password first, then name picker
+  if (!authenticated || !user) {
     return (
       <UserPicker
+        authenticated={authenticated}
+        onLogin={login}
         benutzer={benutzer}
         loading={benutzerLoading}
         onSelect={selectUser}
@@ -178,7 +180,7 @@ export default function Home() {
               ))}
             </nav>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 12, color: '#94a3b8' }}>{displayName}</span>
             <button
               className="btn"
@@ -186,6 +188,13 @@ export default function Home() {
               style={{ padding: '5px 12px', background: 'transparent', border: '1px solid #334155', borderRadius: 3, color: '#94a3b8', fontSize: 11, cursor: 'pointer' }}
             >
               Nutzer wechseln
+            </button>
+            <button
+              className="btn"
+              onClick={logout}
+              style={{ padding: '5px 12px', background: 'transparent', border: '1px solid #334155', borderRadius: 3, color: '#64748b', fontSize: 11, cursor: 'pointer' }}
+            >
+              Abmelden
             </button>
           </div>
         </div>
